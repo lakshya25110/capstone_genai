@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Copilot AI | Executive Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <nav class="sidebar">
+            <div class="sidebar-logo"><i data-lucide="zap" class="accent-icon"></i></div>
+            <div class="nav-items">
+                <button class="nav-btn active" data-page="home" title="Home"><i data-lucide="home"></i></button>
+                <button class="nav-btn" data-page="dashboard" title="Dashboard"><i data-lucide="layout-dashboard"></i></button>
+                <button class="nav-btn" data-page="research" title="Research"><i data-lucide="search"></i></button>
+                <button class="nav-btn" data-page="strategy" title="Strategy"><i data-lucide="brain-circuit"></i></button>
+                <button class="nav-btn" data-page="roadmap" title="Roadmap"><i data-lucide="calendar"></i></button>
+            </div>
+            <div class="sidebar-footer">
+                <button class="nav-btn" data-page="chat" title="Assistant"><i data-lucide="message-square"></i></button>
+            </div>
+        </nav>
+
+        <main class="workspace">
+            <header class="top-bar">
+                <h2 id="active-page-title">Home</h2>
+                <div class="key-input-wrapper">
+                    <i data-lucide="key"></i>
+                    <input type="password" id="groq-key-input" placeholder="Groq API Key">
+                </div>
+            </header>
+
+            <section id="page-home" class="page-content active">
+                <div class="welcome-hero">
+                    <h1>Build your <span class="gradient-text">Empire</span>.</h1>
+                    <p>Select your starting point.</p>
+                </div>
+                
+                <div class="entry-grid" id="entry-modes">
+                    <div class="entry-card" onclick="setMode('ideas')"><i data-lucide="sparkles"></i><h3>Find an Opportunity</h3></div>
+                    <div class="entry-card" onclick="setMode('validate')"><i data-lucide="file-check"></i><h3>Test the Foundation</h3></div>
+                    <div class="entry-card" onclick="setMode('execution')"><i data-lucide="rocket"></i><h3>Build My Vision</h3></div>
+                </div>
+
+                <div id="form-container" class="form-section hidden glass-card">
+                    <div id="form-execution" class="mode-form hidden">
+                        <div class="form-row">
+                            <input type="text" id="exec-domain" placeholder="Domain (e.g. Fintech)">
+                            <input type="text" id="exec-skills" placeholder="Skills (e.g. AI, Sales)">
+                            <button onclick="handleAction('execution')" class="primary-btn">Generate</button>
+                        </div>
+                    </div>
+                    <div id="form-validate" class="mode-form hidden">
+                        <div class="form-row">
+                            <input type="text" id="valid-idea" placeholder="Enter your startup name or brief concept">
+                            <button onclick="handleAction('validate')" class="primary-btn">Validate</button>
+                        </div>
+                    </div>
+                    <div id="form-ideas" class="mode-form hidden">
+                        <div class="form-row" style="justify-content: center;">
+                            <button onclick="handleAction('ideas')" class="primary-btn">Get Started</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results-container" class="horizontal-ideas-container"></div>
+                
+                <div id="home-detail-view" class="detail-overlay hidden">
+                    <div class="home-tabs">
+                        <button class="home-tab-btn active" onclick="switchHomeTab('validation')">Validation</button>
+                        <button class="home-tab-btn" onclick="switchHomeTab('roadmap')">Roadmap</button>
+                    </div>
+                    <div id="home-val-content" class="home-tab-pane"></div>
+                    <div id="home-road-content" class="home-tab-pane hidden"></div>
+                </div>
+            </section>
+
+            <section id="page-dashboard" class="page-content hidden">
+                <div class="widgets-grid">
+                    <div class="widget glass-card">
+                        <div class="widget-header"><i data-lucide="bar-chart-3"></i><h4>Growth Tracker</h4></div>
+                        <div class="chart-container" id="growth-chart"></div>
+                    </div>
+                    <div class="widget glass-card">
+                        <div class="widget-header"><i data-lucide="bell" class="alert-icon"></i><h4>Active Insights</h4></div>
+                        <div id="insights-list" class="insights-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-research" class="page-content hidden">
+                <div class="research-assistant glass-card">
+                    <div class="research-header">
+                        <input type="text" id="research-query" placeholder="Ask a question about the market...">
+                        <button id="search-docs-btn" class="primary-btn">Ask AI</button>
+                    </div>
+                    <div id="research-answer" class="research-answer-box">
+                        <p class="placeholder-text">Enter a question to search the knowledge base...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-strategy" class="page-content hidden">
+                <div class="strategy-setup glass-card">
+                    <h3>Tactical Strategy Builder</h3>
+                    <p>Adjust your constraints to generate a custom execution plan.</p>
+                    <div class="form-row" style="margin-top: 20px;">
+                        <select id="strat-budget" class="styled-select">
+                            <option value="<$1k">Bootstrapping (< $1k)</option>
+                            <option value="$1k-$10k">Lean Launch ($1k - $10k)</option>
+                            <option value="$10k-$50k">Seed Ready ($10k - $50k)</option>
+                            <option value="$50k+">Capitalized ($50k+)</option>
+                        </select>
+                        <input type="number" id="strat-age" placeholder="Founder Age (Years)" class="styled-input" value="21">
+                        <button onclick="calculateStrategy()" class="primary-btn">Execute Strategy</button>
+                    </div>
+                </div>
+                <div id="strategy-output" class="strategy-results-container hidden">
+                    <!-- AI Generated Strategy Report -->
+                </div>
+            </section>
+
+            <section id="page-roadmap" class="page-content hidden">
+                <div id="page-roadmap-container" class="roadmap-page-view"></div>
+            </section>
+
+            <section id="page-chat" class="page-content hidden">
+                <div class="chat-interface glass-card">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="Ask the Copilot anything...">
+                        <button id="send-chat-btn"><i data-lucide="send"></i></button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
