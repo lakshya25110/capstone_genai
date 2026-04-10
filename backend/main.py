@@ -10,6 +10,12 @@ from fastapi.responses import FileResponse
 import uvicorn
 import traceback
 
+# LangSmith Observability Integration (Configured via Env Variables)
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_PROJECT"] = "startup-copilot-ai"
+# The API Key should be set in your Environment or a .env file
+# os.environ["LANGCHAIN_API_KEY"] = "your_key_here"
+
 app = FastAPI(title="Startup Copilot AI")
 
 # Enable CORS
@@ -141,6 +147,26 @@ Instructions:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/pioneers")
+async def get_pioneers(request: dict, x_groq_key: str = Header(...)):
+    try:
+        domain = request.get("domain", "Tech")
+        result = run_startup_workflow("pioneers", {"domain": domain}, x_groq_key)
+        return result
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ecosystem")
+async def get_ecosystem(request: dict, x_groq_key: str = Header(...)):
+    try:
+        domain = request.get("domain", "Tech")
+        result = run_startup_workflow("ecosystem", {"domain": domain}, x_groq_key)
+        return result
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Locate frontend path
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 frontend_path = os.path.join(os.path.dirname(backend_dir), "frontend")
@@ -153,4 +179,4 @@ async def serve_frontend():
     return FileResponse(os.path.join(frontend_path, "index.html"))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)

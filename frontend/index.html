@@ -17,9 +17,11 @@
             <div class="nav-items">
                 <button class="nav-btn active" data-page="home" title="Home"><i data-lucide="home"></i></button>
                 <button class="nav-btn" data-page="dashboard" title="Dashboard"><i data-lucide="layout-dashboard"></i></button>
+                <button class="nav-btn" data-page="pioneers" title="Impact Leaders"><i data-lucide="users"></i></button>
                 <button class="nav-btn" data-page="research" title="Research"><i data-lucide="search"></i></button>
                 <button class="nav-btn" data-page="strategy" title="Strategy"><i data-lucide="brain-circuit"></i></button>
                 <button class="nav-btn" data-page="roadmap" title="Roadmap"><i data-lucide="calendar"></i></button>
+                <button class="nav-btn" data-page="ecosystem" title="Education Hub"><i data-lucide="graduation-cap"></i></button>
             </div>
             <div class="sidebar-footer">
                 <button class="nav-btn" data-page="chat" title="Assistant"><i data-lucide="message-square"></i></button>
@@ -93,6 +95,16 @@
                 </div>
             </section>
 
+            <section id="page-pioneers" class="page-content hidden">
+                <div class="welcome-hero">
+                    <h1>Impact <span class="gradient-text">Leaders</span></h1>
+                    <p>Learn from those who created massive value in your domain.</p>
+                </div>
+                <div id="pioneers-container" class="pioneers-grid">
+                    <div class="loading">Discovering giants...</div>
+                </div>
+            </section>
+
             <section id="page-research" class="page-content hidden">
                 <div class="research-assistant glass-card">
                     <div class="research-header">
@@ -120,13 +132,29 @@
                         <button onclick="calculateStrategy()" class="primary-btn">Execute Strategy</button>
                     </div>
                 </div>
-                <div id="strategy-output" class="strategy-results-container hidden">
-                    <!-- AI Generated Strategy Report -->
-                </div>
+                <!-- Strategy result will appear here -->
+                <div id="strategy-output" class="detail-overlay hidden" style="padding:40px; margin-top:20px;"></div>
             </section>
 
             <section id="page-roadmap" class="page-content hidden">
                 <div id="page-roadmap-container" class="roadmap-page-view"></div>
+            </section>
+
+            <section id="page-ecosystem" class="page-content hidden">
+                <div class="welcome-hero">
+                    <h1>Education <span class="gradient-text">Hub</span></h1>
+                    <p>Major summits, active hackathons, and curated learning for builders.</p>
+                </div>
+                <div class="ecosystem-layout">
+                    <div class="eco-section">
+                        <div class="section-header"><i data-lucide="calendar"></i> <h2>Upcoming Summits & Events</h2></div>
+                        <div id="events-container" class="events-list"></div>
+                    </div>
+                    <div class="eco-section">
+                        <div class="section-header"><i data-lucide="play-circle"></i> <h2>Builder Resources & YouTube</h2></div>
+                        <div id="resources-container" class="resources-grid"></div>
+                    </div>
+                </div>
             </section>
 
             <section id="page-chat" class="page-content hidden">

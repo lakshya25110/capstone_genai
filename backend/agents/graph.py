@@ -32,6 +32,31 @@ class Idea(BaseModel):
 class IdeaList(BaseModel):
     ideas: List[Idea]
 
+class Pioneer(BaseModel):
+    name: str = Field(description="Name of the person")
+    company: str = Field(description="Company they founded or lead")
+    story: str = Field(description="One sentence about their success")
+    link: str = Field(description="URL to their LinkedIn, Twitter or website")
+
+class PioneerList(BaseModel):
+    pioneers: List[Pioneer]
+
+class Event(BaseModel):
+    name: str = Field(description="Name of the event")
+    date: str = Field(description="Date or month of the event")
+    location: str = Field(description="City or 'Online'")
+    link: str = Field(description="Registration URL")
+
+class Resource(BaseModel):
+    title: str = Field(description="Title of the resource/video")
+    type: str = Field(description="e.g. YouTube, Podcast, Article")
+    summary: str = Field(description="Why this is relevant")
+    url: str = Field(description="Link to the resource")
+
+class EcosystemList(BaseModel):
+    events: List[Event]
+    resources: List[Resource]
+
 def generate_ideas_node(state: AgentState):
     llm = get_llm(state["groq_key"])
     
@@ -115,6 +140,36 @@ def strategy_node(state: AgentState):
     res = chain.invoke({"idea": json.dumps(idea), "budget": budget, "age": age})
     return {"result": {"strategy_report": res.content}}
 
+def pioneers_node(state: AgentState):
+    llm = get_llm(state["groq_key"])
+    domain = state["input_data"].get("domain", "Tech")
+    
+    structured_llm = llm.with_structured_output(PioneerList)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a startup historian. Identify 4 iconic founders or leaders who have succeeded in the specific domain provided. Provide their name, company, a punchy one-sentence story, and a real URL to their profile or company site. If domain is generic, provide global tech icons."),
+        ("human", "Find pioneers for the domain: '{domain}'")
+    ])
+    
+    chain = prompt | structured_llm
+    res = chain.invoke({"domain": domain})
+    return {"result": res.model_dump()}
+
+def ecosystem_node(state: AgentState):
+    llm = get_llm(state["groq_key"])
+    domain = state["input_data"].get("domain", "Tech")
+    
+    structured_llm = llm.with_structured_output(EcosystemList)
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "You are a startup networker. Identify 3 major global startup events or summits happening in 2026 (e.g. Web Summit, SaaStr, TechCrunch Disrupt, Slush). Also, provide 3 high-quality learning resources or specific YouTube video suggestions (name and search link) related to the given domain."),
+        ("human", "Build an ecosystem hub for the domain: '{domain}'")
+    ])
+    
+    chain = prompt | structured_llm
+    res = chain.invoke({"domain": domain})
+    return {"result": res.model_dump()}
+
 def run_startup_workflow(task: str, input_data: Dict, groq_key: str):
     workflow = StateGraph(AgentState)
     
@@ -123,6 +178,8 @@ def run_startup_workflow(task: str, input_data: Dict, groq_key: str):
     workflow.add_node("roadmap", generate_roadmap_node)
     workflow.add_node("chat", chat_node)
     workflow.add_node("strategy", strategy_node)
+    workflow.add_node("pioneers", pioneers_node)
+    workflow.add_node("ecosystem", ecosystem_node)
     
     workflow.set_entry_point(task)
     workflow.add_edge(task, END)

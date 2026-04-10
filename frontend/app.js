@@ -4,7 +4,8 @@ const state = {
     groqKey: localStorage.getItem('groq_key') || "",
     currentIdea: null,
     activePage: 'home',
-    mode: 'ideas'
+    mode: 'ideas',
+    cache: {}
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +29,9 @@ function changePage(pageId) {
     state.activePage = pageId;
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.page === pageId));
     document.querySelectorAll('.page-content').forEach(page => page.classList.toggle('hidden', page.id !== `page-${pageId}`));
-    document.getElementById('active-page-title').innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+    document.getElementById('active-page-title').innerText = pageId === 'pioneers' ? 'Impact Leaders' : (pageId === 'ecosystem' ? 'Education Hub' : pageId.charAt(0).toUpperCase() + pageId.slice(1));
+    if (pageId === 'pioneers') fetchImpactLeaders();
+    if (pageId === 'ecosystem') fetchEducationHub();
     lucide.createIcons();
 }
 
@@ -113,6 +116,116 @@ async function selectIdea(idea) {
     // Auto-fill dashboard & strategy
     simulateGrowth();
     fetchInsights();
+    fetchImpactLeaders();
+    fetchEducationHub();
+}
+
+async function fetchImpactLeaders() {
+    const container = document.getElementById('pioneers-container');
+    const domain = state.currentIdea ? (state.currentIdea.name + " " + state.currentIdea.description) : "Technology";
+    
+    if (state.cache[`leaders_${domain}`]) {
+        renderImpactLeaders(state.cache[`leaders_${domain}`]);
+        return;
+    }
+
+    container.innerHTML = "<div class='loading'>Scouting visionaries...</div>";
+    const data = await apiRequest('/pioneers', { domain });
+    
+    if (data && data.pioneers) {
+        state.cache[`leaders_${domain}`] = data.pioneers;
+        renderImpactLeaders(data.pioneers);
+    } else {
+        container.innerHTML = "<div class='loading'>Establishing contact with leaders...</div>";
+    }
+}
+
+function renderImpactLeaders(leaders) {
+    const container = document.getElementById('pioneers-container');
+    container.innerHTML = "";
+    leaders.forEach(p => {
+        const card = document.createElement('div');
+        card.className = "pioneer-card glass-card";
+        card.innerHTML = `
+            <h3>${p.name}</h3>
+            <div class="company">${p.company}</div>
+            <div class="story">${p.story}</div>
+            <a href="${p.link}" target="_blank" class="pioneer-link">View Achievement</a>
+        `;
+        container.appendChild(card);
+    });
+}
+
+async function fetchEducationHub() {
+    const eCont = document.getElementById('events-container');
+    const rCont = document.getElementById('resources-container');
+    const domain = state.currentIdea ? (state.currentIdea.name + " " + state.currentIdea.description) : "Technology";
+
+    // Instant Load from Cache
+    if (state.cache[`edu_${domain}`]) {
+        renderEducationHub(state.cache[`edu_${domain}`]);
+        return;
+    }
+
+    // Optimistic UI: Show fallbacks immediately
+    renderEducationHub(getFallbackEcosystem());
+    
+    // Background Fetch for Niche Data
+    apiRequest('/ecosystem', { domain }).then(data => {
+        if (data) {
+            state.cache[`edu_${domain}`] = data;
+            renderEducationHub(data);
+        }
+    });
+}
+
+function renderEducationHub(data) {
+    const eCont = document.getElementById('events-container');
+    const rCont = document.getElementById('resources-container');
+    
+    if (data.events) {
+        eCont.innerHTML = "";
+        data.events.forEach(ev => {
+            const div = document.createElement('div');
+            div.className = "event-card";
+            div.innerHTML = `
+                <div class="date">${ev.date}</div>
+                <h3>${ev.name}</h3>
+                <div class="loc">${ev.location}</div>
+                <a href="${ev.link}" target="_blank" class="res-link">Register / Info</a>
+            `;
+            eCont.appendChild(div);
+        });
+    }
+    if (data.resources) {
+        rCont.innerHTML = "";
+        data.resources.forEach(res => {
+            const div = document.createElement('div');
+            div.className = "resource-card";
+            div.innerHTML = `
+                <div class="res-content">
+                    <span class="res-tag">${res.type}</span>
+                    <h4>${res.title}</h4>
+                    <p>${res.summary}</p>
+                </div>
+                <a href="${res.url}" target="_blank" class="res-link">Explore Education</a>
+            `;
+            rCont.appendChild(div);
+        });
+    }
+}
+
+function getFallbackEcosystem() {
+    return {
+        events: [
+            { name: "Web Summit 2026", date: "Nov 2026", location: "Lisbon, Portugal", link: "https://websummit.com" },
+            { name: "SaaStr Annual", date: "May 2026", location: "San Francisco, USA", link: "https://saastrannual.com" }
+        ],
+        resources: [
+            { title: "Y Combinator's Library", type: "Academy", summary: "Resources for building a startup from scratch.", url: "https://www.ycombinator.com/library" },
+            { title: "How to Start a Startup", type: "YouTube", summary: "The iconic lecture series on building product-market fit.", url: "https://www.youtube.com/playlist?list=PL5q_lef6zV679T9-f_i6-e5y8Sly4uY3f" }
+        ]
+    };
 }
 
 async function simulateGrowth() {

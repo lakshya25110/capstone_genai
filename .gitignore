@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+chroma_db/
+server_log*.txt
+.gemini/
+.env.local
